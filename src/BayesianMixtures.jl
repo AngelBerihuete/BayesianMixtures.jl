@@ -9,6 +9,7 @@ include("MVNaaC.jl")
 include("MVNaaN.jl")
 include("MVNaaRJ.jl")
 include("NormalNonoptimized.jl")
+using StatsBase
 
 # ===================================================================
 # ===================================================================
