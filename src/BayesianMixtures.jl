@@ -50,7 +50,7 @@ function options(
 
     # Compute partition distribution values
     n = length(x)
-    print(n)
+    print("Hello printing")
     if model_type=="MFM"
         log_v = MFM.coefficients(eval(parse(log_pk)),gamma,n,t_max+1)
         a = b = gamma
