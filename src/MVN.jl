@@ -4,7 +4,9 @@ module MVN
 module MVNmodel
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!, update_parameter!, mixrnd, mixture_density
-       
+
+using Distributions
+
 include("Lower.jl")
 using .Lower
 
@@ -118,10 +120,24 @@ typealias Theta MVN_params
 Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
 # log_likelihood(x,p) = MVN_logpdf(x,p)
 
-function log_likelihood(x,p)
+#=function log_likelihood(x,p)
     l,b,r = x
     y = [r*cos(l*pi/180)*cos(b*pi/180), r*sin(l*pi/180)*cos(b*pi/180), r*sin(b*pi/180)]
-    return MVN_logpdf(y,p) * r^2 * cos(b)
+    return MVN_logpdf(y,p) * r^2 * cos(b) ## ???? falta exponencial ?????
+end
+=#
+
+function log_likelihood(x,p)
+    l,b,plx,e_plx = x
+    rPDF = 500*Beta(1,1)
+    r = rand(rPDF, 100)
+    ps = -infty
+    for i in 1:100
+        y = [r[i]*cos(l*pi/180)*cos(b*pi/180), r[i]*sin(l*pi/180)*cos(b*pi/180),
+        r[i]*sin(b*pi/180)]
+        ps += pdf(plx,Normal(1/r[i],e_plx)) * exp(MVN_logpdf(y,p)) * r[i]^2
+    end
+    return ps * cos(b)
 end
 
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
