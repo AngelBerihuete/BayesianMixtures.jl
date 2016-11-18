@@ -116,7 +116,14 @@ end
 # likelihood: Normal(x|mean=m,Cov=inv(R)) (Note: R is represented as L*L'.)
 typealias Theta MVN_params
 Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
-log_likelihood(x,p) = MVN_logpdf(x,p)
+# log_likelihood(x,p) = MVN_logpdf(x,p)
+
+function log_likelihood(x,p)
+    l,b,r = x
+    y = [r*cos(l*pi/180)*cos(b*pi/180), r*sin(l*pi/180)*cos(b*pi/180), r*sin(b*pi/180)]
+    return MVN_logpdf(y,p) * r^2 * cos(b)
+end
+
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
 log_prior(p,H) = MVN_logpdf(p.m,H.m) + Wishart_logpdf(MVN_get_R!(p),p.L,H.R)
 new_theta(H) = MVN_params(zeros(H.d),eye(H.d))
