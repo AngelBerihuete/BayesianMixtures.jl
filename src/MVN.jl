@@ -135,12 +135,12 @@ function log_likelihood(x,p)
     # pdf(Normal(1/r[i],e_plx),plx) as Bailer-Jones paper. But because of 
     # simetry of the normal and to drop off the construction of Normal(1/r
     # [i],e_plx) inside the loop we take this option.
-    ps = 0
+    ps = 0.
     for i in 1:100
-        y = [r[i]*cos(l*pi/180)*cos(b*pi/180),r[i]*sin(l*pi/180)*cos(b*pi/180),r[i]*sin(b*pi/180)]
-        print(y)
+        x_aux = [r[i]*cos(l*pi/180)*cos(b*pi/180),r[i]*sin(l*pi/180)*cos(b*pi/180),r[i]*sin(b*pi/180)]
+        print(x_aux)
         #ps = ps + pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(y,p)) * r[i]^2
-        ps = ps + pdf(plxPDF,1/r[i]) * r[i]^2
+        ps += pdf(plxPDF,1/r[i]) * r[i]^2
         print(ps)
     end
     return ps * cos(b*pi/180)
