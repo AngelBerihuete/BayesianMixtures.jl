@@ -130,7 +130,6 @@ function log_likelihood(x,p)
     l,b,plx,e_plx = x
     rPDF = Beta(1,1) # Distribution of distances (uniform)
     r = 500*rand(rPDF, 100)
-
     plxPDF = Normal(plx,e_plx) # Bailer-Jones parallax distribution (Normal)
     # Be careful!! Because the true evaluation of the PDF parallax is
     # pdf(Normal(1/r[i],e_plx),plx) as Bailer-Jones paper. But because of 
@@ -141,6 +140,7 @@ function log_likelihood(x,p)
         y = [r[i]*cos(l*pi/180)*cos(b*pi/180),
         r[i]*sin(l*pi/180)*cos(b*pi/180),
         r[i]*sin(b*pi/180)]
+        print(y)
         ps += pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(y,p)) * r[i]^2
     end
     return ps * cos(b*pi/180)
