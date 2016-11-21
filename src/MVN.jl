@@ -138,9 +138,7 @@ function log_likelihood(x,p)
     ps = 0.
     for i in 1:100
         x_aux = [r[i]*cos(l*pi/180)*cos(b*pi/180),r[i]*sin(l*pi/180)*cos(b*pi/180),r[i]*sin(b*pi/180)]
-        print(x_aux)
-        #ps = ps + pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(y,p)) * r[i]^2
-        ps += pdf(plxPDF,1/r[i]) * r[i]^2
+        ps += pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(x_aux,p)) * r[i]^2
         print(ps)
     end
     return ps * cos(b*pi/180)
