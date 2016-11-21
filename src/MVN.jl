@@ -126,18 +126,24 @@ Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
     return MVN_logpdf(y,p) * r^2 * cos(b) ## ???? falta exponencial ?????
 end
 =#
-
 function log_likelihood(x,p)
     l,b,plx,e_plx = x
-    rPDF = 500*Beta(1,1)
-    r = rand(rPDF, 100)
-    ps = -infty
+    rPDF = Beta(1,1) # Distribution of distances (uniform)
+    r = 500*rand(rPDF, 100)
+
+    plxPDF = Normal(plx,e_plx) # Bailer-Jones parallax distribution (Normal)
+    # Be careful!! Because the true evaluation of the PDF parallax is
+    # pdf(Normal(1/r[i],e_plx),plx) as Bailer-Jones paper. But because of 
+    # simetry of the normal and to drop off the construction of Normal(1/r
+    # [i],e_plx) inside the loop we take this option.
+    ps = 0
     for i in 1:100
-        y = [r[i]*cos(l*pi/180)*cos(b*pi/180), r[i]*sin(l*pi/180)*cos(b*pi/180),
+        y = [r[i]*cos(l*pi/180)*cos(b*pi/180),
+        r[i]*sin(l*pi/180)*cos(b*pi/180),
         r[i]*sin(b*pi/180)]
-        ps += pdf(plx,Normal(1/r[i],e_plx)) * exp(MVN_logpdf(y,p)) * r[i]^2
+        ps += pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(y,p)) * r[i]^2
     end
-    return ps * cos(b)
+    return ps * cos(b*pi/180)
 end
 
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
