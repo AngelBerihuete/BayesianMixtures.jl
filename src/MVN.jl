@@ -142,7 +142,7 @@ function log_likelihood(x,p)
         ps += pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(x_aux,p)) * r[i]^2
         print(ps)
     end
-    return ps * cos(b*pi/180)
+    return log(ps) + log(abs(cos(b*pi/180)))
 end
 
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
