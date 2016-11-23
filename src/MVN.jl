@@ -127,6 +127,23 @@ Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
 end
 =#
 function log_likelihood(x,p)
+    l,b = x
+    r = collect(1:5:500);
+    # Trapezoidal rule to calculate the integral
+    ps = 0.
+    x_aux = [r[1]*cos(l*pi/180)*cos(b*pi/180),r[1]*sin(l*pi/180)*cos(b*pi/180),r[1]*sin(b*pi/180)]
+    ps += exp(MVN_logpdf(x_aux,p)) * r[1]^2
+    x_aux = [r[end]*cos(l*pi/180)*cos(b*pi/180),r[end]*sin(l*pi/180)*cos(b*pi/180),r[end]*sin(b*pi/180)]
+    ps += exp(MVN_logpdf(x_aux,p)) * r[end]^2
+    for i in 2:99
+        x_aux = [r[i]*cos(l*pi/180)*cos(b*pi/180),r[i]*sin(l*pi/180)*cos(b*pi/180),r[i]*sin(b*pi/180)]
+        ps += 2*exp(MVN_logpdf(x_aux,p)) * r[i]^2
+    end
+    integral = (r[2]-r[1])*ps/2
+    return log(integral) + log(abs(cos(b*pi/180)))
+end
+
+#=function log_likelihood(x,p)
     l,b,plx,e_plx = x
     rPDF = Beta(1,1) # Distribution of distances (uniform)
     r = 500*rand(rPDF, 100)
@@ -145,7 +162,7 @@ function log_likelihood(x,p)
     return log(ps) + log(abs(cos(b*pi/180)))
 end
 
-# prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
+=## prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
 log_prior(p,H) = MVN_logpdf(p.m,H.m) + Wishart_logpdf(MVN_get_R!(p),p.L,H.R)
 new_theta(H) = MVN_params(zeros(H.d),eye(H.d))
 prior_sample!(p,H) = (MVN_sample!(p.m,H.m); Wishart_sample!(p.L,H.R); MVN_notify_L!(p))
