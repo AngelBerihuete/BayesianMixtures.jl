@@ -126,7 +126,8 @@ Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
     return MVN_logpdf(y,p) * r^2 * cos(b) ## ???? falta exponencial ?????
 end
 =#
-function log_likelihood(x,p)
+
+#=function log_likelihood(x,p)
     l,b = x
     r = collect(1:5:500);
     # Trapezoidal rule to calculate the integral
@@ -142,25 +143,40 @@ function log_likelihood(x,p)
     integral = (r[2]-r[1])*ps/2
     return log(integral) + log(abs(cos(b*pi/180)))
 end
+=#
 
-#=function log_likelihood(x,p)
-    l,b,plx,e_plx = x
-    rPDF = Beta(1,1) # Distribution of distances (uniform)
-    r = 500*rand(rPDF, 100)
-    plxPDF = Normal(plx,e_plx) # Bailer-Jones parallax distribution (Normal)
-    # Be careful!! Because the true evaluation of the PDF parallax is
-    # pdf(Normal(1/r[i],e_plx),plx) as Bailer-Jones paper. But because of 
-    # simetry of the normal and to drop off the construction of Normal(1/r
-    # [i],e_plx) inside the loop we take this option.
+Using Distributions
+
+function log_likelihood(x,p)
+    l,b,parallax,sigma_parallax = x
+    r = collect(1:5:500);
+    # Trapezoidal rule to calculate the integral
     ps = 0.
-    for i in 1:100
-        x_aux = [r[i]*cos(l*pi/180)*cos(b*pi/180),r[i]*sin(l*pi/180)*cos(b*pi/180),r[i]*sin(b*pi/180)]
-        print(p)
-        ps += pdf(plxPDF,1/r[i]) * exp(MVN_logpdf(x_aux,p)) * r[i]^2
-        print(ps)
+    
+    gPDF0 = Normal(1/r[1],sigma_parallax)
+    x_1 = [r[1]*cos(l*pi/180)*cos(b*pi/180),
+    r[1]*sin(l*pi/180)*cos(b*pi/180),
+    r[1]*sin(b*pi/180)]
+    ps += pdf(gPDF0,parallax) * exp(MVN_logpdf(x_1,p)) * r[1]^2
+    
+    gPDFM = Normal(1/r[end],sigma_parallax)
+    x_M = [r[end]*cos(l*pi/180)*cos(b*pi/180),
+    r[end]*sin(l*pi/180)*cos(b*pi/180),
+    r[end]*sin(b*pi/180)]
+    ps += pdf(gPDFM,parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
+    
+    for i in 2:99
+        gPDFi = Normal(1/r[i],sigma_parallax)
+        x_i = [r[i]*cos(l*pi/180)*cos(b*pi/180),
+        r[i]*sin(l*pi/180)*cos(b*pi/180),
+        r[i]*sin(b*pi/180)]
+        ps += 2* pdf(gPDFi,parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
     end
-    return log(ps) + log(abs(cos(b*pi/180)))
+    integral = (r[2]-r[1])*ps/2
+    
+    return log(integral) + log(abs(cos(b*pi/180)))
 end
+
 
 =## prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
 log_prior(p,H) = MVN_logpdf(p.m,H.m) + Wishart_logpdf(MVN_get_R!(p),p.L,H.R)
