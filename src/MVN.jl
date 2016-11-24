@@ -127,7 +127,7 @@ Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
 end
 =#
 
-#=function log_likelihood(x,p)
+function log_likelihood(x,p)
     l,b = x
     r = collect(1:5:500);
     # Trapezoidal rule to calculate the integral
@@ -143,11 +143,11 @@ end
     integral = (r[2]-r[1])*ps/2
     return log(integral) + log(abs(cos(b*pi/180)))
 end
-=#
 
-function log_likelihood(x,p)
+
+#=function log_likelihood(x,p)
     l,b,parallax,sigma_parallax = x
-    r = collect(1:5:500);
+    r = collect(15:5:700);
     # Trapezoidal rule to calculate the integral
     ps = 0.
     
@@ -163,7 +163,7 @@ function log_likelihood(x,p)
     r[end]*sin(b*pi/180)]
     ps += pdf(gPDFM,parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
     
-    for i in 2:99
+    for i in 2:(length(r)-1)
         gPDFi = Normal(1/r[i],sigma_parallax)
         x_i = [r[i]*cos(l*pi/180)*cos(b*pi/180),
         r[i]*sin(l*pi/180)*cos(b*pi/180),
@@ -174,7 +174,7 @@ function log_likelihood(x,p)
 
     return log(integral) + log(abs(cos(b*pi/180)))
 end
-
+=#
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
 log_prior(p,H) = MVN_logpdf(p.m,H.m) + Wishart_logpdf(MVN_get_R!(p),p.L,H.R)
 new_theta(H) = MVN_params(zeros(H.d),eye(H.d))
