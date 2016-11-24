@@ -145,8 +145,6 @@ end
 end
 =#
 
-Using Distributions
-
 function log_likelihood(x,p)
     l,b,parallax,sigma_parallax = x
     r = collect(1:5:500);
@@ -173,7 +171,7 @@ function log_likelihood(x,p)
         ps += 2* pdf(gPDFi,parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
     end
     integral = (r[2]-r[1])*ps/2
-    
+
     return log(integral) + log(abs(cos(b*pi/180)))
 end
 
