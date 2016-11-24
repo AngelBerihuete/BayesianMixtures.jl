@@ -159,7 +159,7 @@ end
 # ---------
 function log_likelihood(x,p)
     l,b,parallax,sigma_parallax = x
-    r = collect(15:5:700);
+    r = collect(15:5:700); # better aprox. to our ditances
     # Trapezoidal rule to calculate the integral
     ps = 0.
     
