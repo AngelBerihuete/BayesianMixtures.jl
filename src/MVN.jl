@@ -118,8 +118,14 @@ end
 # likelihood: Normal(x|mean=m,Cov=inv(R)) (Note: R is represented as L*L'.)
 typealias Theta MVN_params
 Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
+# --------------
+# Jeff's Log-lik
+# --------------
 # log_likelihood(x,p) = MVN_logpdf(x,p)
 
+# ---------
+# Example 1
+# ---------
 #=function log_likelihood(x,p)
     l,b,r = x
     y = [r*cos(l*pi/180)*cos(b*pi/180), r*sin(l*pi/180)*cos(b*pi/180), r*sin(b*pi/180)]
@@ -127,7 +133,10 @@ Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
 end
 =#
 
-function log_likelihood(x,p)
+# ---------
+# Example 2
+# ---------
+#=function log_likelihood(x,p)
     l,b = x
     r = collect(1:5:500);
     # Trapezoidal rule to calculate the integral
@@ -143,9 +152,12 @@ function log_likelihood(x,p)
     integral = (r[2]-r[1])*ps/2
     return log(integral) + log(abs(cos(b*pi/180)))
 end
+=#
 
-
-#=function log_likelihood(x,p)
+# ---------
+# Example 3
+# ---------
+function log_likelihood(x,p)
     l,b,parallax,sigma_parallax = x
     r = collect(15:5:700);
     # Trapezoidal rule to calculate the integral
@@ -174,7 +186,7 @@ end
 
     return log(integral) + log(abs(cos(b*pi/180)))
 end
-=#
+
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
 log_prior(p,H) = MVN_logpdf(p.m,H.m) + Wishart_logpdf(MVN_get_R!(p),p.L,H.R)
 new_theta(H) = MVN_params(zeros(H.d),eye(H.d))
