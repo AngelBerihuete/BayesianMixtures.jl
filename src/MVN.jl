@@ -175,8 +175,7 @@ function log_likelihood(x,p)
     return log(integral) + log(abs(cos(b*pi/180)))
 end
 
-
-=## prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
+# prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
 log_prior(p,H) = MVN_logpdf(p.m,H.m) + Wishart_logpdf(MVN_get_R!(p),p.L,H.R)
 new_theta(H) = MVN_params(zeros(H.d),eye(H.d))
 prior_sample!(p,H) = (MVN_sample!(p.m,H.m); Wishart_sample!(p.L,H.R); MVN_notify_L!(p))
