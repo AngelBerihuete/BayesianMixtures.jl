@@ -50,6 +50,8 @@ function options(
 
     # Compute partition distribution values
     n = length(x)
+    s_plx = x[:,end]
+    x = x[:, 1:3]
     if model_type=="MFM"
         log_v = MFM.coefficients(eval(parse(log_pk)),gamma,n,t_max+1)
         a = b = gamma
@@ -64,7 +66,7 @@ function options(
     n_keep = min(n_keep,n_total)
     module_ = eval(parse(mode))
     module_name = repr(module_)
-    return module_.Options(mode, model_type, x, n_total, n_keep, n_burn, verbose,
+    return module_.Options(mode, model_type, x, s_plx, n_total, n_keep, n_burn, verbose,
                            use_hyperprior, t_max, gamma, log_pk, alpha_random, p_alpha, alpha,
                            use_splitmerge, n_split, n_merge, k_max, a, b, log_v, n, module_name)
 end

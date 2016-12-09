@@ -3,6 +3,7 @@ type Options
     mode::String
     model_type::String
     x::Array{Data,1}
+    s_plx::Array{Data,1}
     n_total::Int64
     n_keep::Int64
     n_burn::Int64
