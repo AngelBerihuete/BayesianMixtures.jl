@@ -22,6 +22,7 @@ function options(
         mode, # "Normal", "MVN", "MVNaaC", "MVNaaN", or "MVNaaRJ"
         model_type, # "MFM" or "DPM"
         x, # data
+        s_plx, # sigma parallaxes
         n_total; # total number of MCMC sweeps to run the sampler
         n_keep=n_total, # number of MCMC sweeps to keep after thinning
         n_burn=round(Int,n_total/10), # number of MCMC sweeps (out of n_total) to discard as burn-in
@@ -50,8 +51,6 @@ function options(
 
     # Compute partition distribution values
     n = length(x)
-    s_plx = x[:,end]
-    x = x[:, 1:3]
     if model_type=="MFM"
         log_v = MFM.coefficients(eval(parse(log_pk)),gamma,n,t_max+1)
         a = b = gamma
