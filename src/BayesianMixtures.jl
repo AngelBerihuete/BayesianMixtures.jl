@@ -22,7 +22,7 @@ function options(
         mode, # "Normal", "MVN", "MVNaaC", "MVNaaN", or "MVNaaRJ"
         model_type, # "MFM" or "DPM"
         x, # data
-        s_plx, # sigma parallaxes
+        plx, # sigma parallaxes
         n_total; # total number of MCMC sweeps to run the sampler
         n_keep=n_total, # number of MCMC sweeps to keep after thinning
         n_burn=round(Int,n_total/10), # number of MCMC sweeps (out of n_total) to discard as burn-in
@@ -65,7 +65,7 @@ function options(
     n_keep = min(n_keep,n_total)
     module_ = eval(parse(mode))
     module_name = repr(module_)
-    return module_.Options(mode, model_type, x, s_plx, n_total, n_keep, n_burn, verbose,
+    return module_.Options(mode, model_type, x, plx, n_total, n_keep, n_burn, verbose,
                            use_hyperprior, t_max, gamma, log_pk, alpha_random, p_alpha, alpha,
                            use_splitmerge, n_split, n_merge, k_max, a, b, log_v, n, module_name)
 end

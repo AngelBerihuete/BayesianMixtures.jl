@@ -43,7 +43,7 @@ function ordered_next(list)
 end
                 
 
-function restricted_Gibbs!(zsa,zsb,tia,tib,tja,tjb,cia,cib,cja,cjb,ni,nj,i,j,S,ns,x,b,H,active)
+function restricted_Gibbs!(zsa,zsb,tia,tib,tja,tjb,cia,cib,cja,cjb,ni,nj,i,j,S,ns,x,plx,b,H,active)
 # NOTE: The sufficient statistics of tia and tja must be in sync with zsa.
 # Also, note that the sufficient statistics of tib and tjb are not updated in this procedure.
     log_p = 0.
@@ -51,8 +51,8 @@ function restricted_Gibbs!(zsa,zsb,tia,tib,tja,tjb,cia,cib,cja,cjb,ni,nj,i,j,S,n
         k = S[ks]
         if k!=i && k!=j
             if zsa[k]==cia; ni -= 1; else; nj -= 1; end
-            Li = log_likelihood(x[k],tia)
-            Lj = log_likelihood(x[k],tja)
+            Li = log_likelihood(x[k],plx[k],tia)
+            Lj = log_likelihood(x[k],plx[k],tja)
             Pi = exp(log(ni+b)+Li - logsumexp(log(ni+b)+Li,log(nj+b)+Lj))
             
             if active
@@ -78,7 +78,7 @@ function restricted_Gibbs!(zsa,zsb,tia,tib,tja,tjb,cia,cib,cja,cjb,ni,nj,i,j,S,n
     return log_p,ni,nj
 end
 
-function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
+function split_merge!(x,plx,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
     n = length(x)
     
     # randomly choose a pair of indices
@@ -121,13 +121,13 @@ function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
         end
     end
     for rep = 1:n_split  # make several moves
-        log_p,ni,nj = restricted_Gibbs!(zs,zs,ti,ti,tj,tj,ci,ci,cj,cj,ni,nj,i,j,S,ns,x,b,H,true)
+        log_p,ni,nj = restricted_Gibbs!(zs,zs,ti,ti,tj,tj,ci,ci,cj,cj,ni,nj,i,j,S,ns,x,plx,b,H,true)
     end
     
     # make proposal
     if ci0==cj0  # propose a split
         # make one final sweep and compute it's probability density
-        log_prop_ab,ni,nj = restricted_Gibbs!(zs,zs,ti,ti,tj,tj,ci,ci,cj,cj,ni,nj,i,j,S,ns,x,b,H,true)
+        log_prop_ab,ni,nj = restricted_Gibbs!(zs,zs,ti,ti,tj,tj,ci,ci,cj,cj,ni,nj,i,j,S,ns,x,plx,b,H,true)
         
         # compute probability density of going from merge launch state to original state
         log_prop_ba = update_parameter!(tm,ti0,H,false,true)
@@ -137,7 +137,7 @@ function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
         log_prior_a = log_v[t] + lgamma(ns+b)-lgamma(a) + log_prior(ti0,H)
         log_lik_ratio = 0.
         for ks = 1:ns; k = S[ks]
-            log_lik_ratio += log_likelihood(x[k],(zs[k]==ci? ti:tj)) - log_likelihood(x[k],ti0)
+            log_lik_ratio += log_likelihood(x[k],plx[k],(zs[k]==ci? ti:tj)) - log_likelihood(x[k],plx[k],ti0)
         end
         p_accept = min(1.0, exp(log_prop_ba-log_prop_ab + log_prior_b-log_prior_a + log_lik_ratio))
         #println("split proposal: ",p_accept)
@@ -163,14 +163,14 @@ function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
         log_prop_ab = update_parameter!(tm,tm,H,true,true)
         
         # compute probability density of going from split launch state to original state
-        log_prop_ba,ni,nj = restricted_Gibbs!(zs,z,ti,ti0,tj,tj0,ci,ci0,cj,cj0,ni,nj,i,j,S,ns,x,b,H,false)
+        log_prop_ba,ni,nj = restricted_Gibbs!(zs,z,ti,ti0,tj,tj0,ci,ci0,cj,cj0,ni,nj,i,j,S,ns,x,plx,b,H,false)
         
         # compute acceptance probability
         log_prior_b = log_v[t-1] + lgamma(ns+b)-lgamma(a) + log_prior(tm,H)
         log_prior_a = log_v[t] + lgamma(ni+b)+lgamma(nj+b)-2*lgamma(a) + log_prior(ti0,H) + log_prior(tj0,H)
         log_lik_ratio = 0.
         for ks = 1:ns; k = S[ks]
-            log_lik_ratio += log_likelihood(x[k],tm) - log_likelihood(x[k],(z[k]==ci0? ti0:tj0))
+            log_lik_ratio += log_likelihood(x[k],plx[k],tm) - log_likelihood(x[k],plx[k],(z[k]==ci0? ti0:tj0))
         end
         p_accept = min(1.0, exp(log_prop_ba-log_prop_ab + log_prior_b-log_prior_a + log_lik_ratio))
         #println("merge proposal: ",p_accept)
@@ -196,7 +196,7 @@ function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
 end
 
 function sampler(options,n_total,n_keep)
-    x,n = options.x,options.n
+    x,plx,n = options.x,options.plx,options.n
     t_max = options.t_max
     a,b,log_v = options.a,options.b,options.log_v
     use_splitmerge,n_split,n_merge = options.use_splitmerge,options.n_split,options.n_merge
@@ -275,9 +275,9 @@ function sampler(options,n_total,n_keep)
             
             # compute probabilities for resampling
             for j = 1:t; cc = list[j]
-                log_p[j] = log_Nb[N[cc]] + log_likelihood(x[i],theta[cc])
+                log_p[j] = log_Nb[N[cc]] + log_likelihood(x[i],plx[i],theta[cc])
             end
-            log_p[t+1] = log_v[t+1]-log_v[t] + log(a) + log_likelihood(x[i],theta[c_prop])
+            log_p[t+1] = log_v[t+1]-log_v[t] + log(a) + log_likelihood(x[i],plx[i],theta[c_prop])
             
             # sample a new cluster for it
             j = randlogp!(log_p,t+1)
@@ -304,7 +304,7 @@ function sampler(options,n_total,n_keep)
         
         # -------------- Split/merge move --------------
         if use_splitmerge
-            t = split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
+            t = split_merge!(x,plx,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
             c_next = ordered_next(list)
             @assert(t<=t_max, "Sampled t has exceeded t_max. Increase t_max and retry.")
         end 
