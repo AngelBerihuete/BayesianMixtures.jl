@@ -5,6 +5,8 @@ module MVNmodel
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!, update_parameter!, mixrnd, mixture_density
        
+using Distributions
+
 include("Lower.jl")
 using .Lower
 
