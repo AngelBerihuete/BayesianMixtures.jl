@@ -5,8 +5,6 @@ module MVNmodel
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!, update_parameter!, mixrnd, mixture_density
        
-using Distributions
-
 include("Lower.jl")
 using .Lower
 
@@ -47,6 +45,12 @@ MVN_notify_L!(p) = (p.logdetR = Lower.logdetsq(p.L,p.d); p._R_valid = false) # c
 MVN_clear!(p) = (fill!(p.sum_x,0.); fill!(p.sum_xx,0.); p.n=0)
 MVN_adjoin!(p,x) = (for i=1:p.d; p.sum_x[i]+=x[i]; for j=1:p.d; p.sum_xx[i,j]+=x[i]*x[j]; end; end; p.n+=1)
 MVN_remove!(p,x) = (for i=1:p.d; p.sum_x[i]-=x[i]; for j=1:p.d; p.sum_xx[i,j]-=x[i]*x[j]; end; end; p.n-=1)
+
+# Normal distribution
+const normal_constant = 0.5*log(2.0*pi)
+normpdf(x) = exp(-0.5*x*x - normal_constant)
+normpdf(x,mu,sigma) = normpdf((x-mu)/sigma)/sigma
+log_normpdf(x,mu,sigma) = (r=(x-mu)/sigma;  -0.5*r*r - log(sigma) - normal_constant)
 
 
 
@@ -118,8 +122,6 @@ end
 # likelihood: Normal(x|mean=m,Cov=inv(R)) (Note: R is represented as L*L'.)
 typealias Theta MVN_params
 Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
-## CAMBIAR !!!!
-#log_likelihood(x,p) = MVN_logpdf(x,p)
 
 function log_likelihood(x,plx,p)
     l,b,r1 = x
@@ -128,24 +130,21 @@ function log_likelihood(x,plx,p)
     # Trapezoidal rule to calculate the integral
     ps = 0.
     
-    gPDF0 = Normal(1/r[1],sigma_parallax)
     x_1 = [r[1]*cos(l*pi/180)*cos(b*pi/180),
     r[1]*sin(l*pi/180)*cos(b*pi/180),
     r[1]*sin(b*pi/180)]
-    ps += pdf(gPDF0,parallax) * exp(MVN_logpdf(x_1,p)) * r[1]^2
+    ps += normpdf(parallax,1/r[1],sigma_parallax) * exp(MVN_logpdf(x_1,p)) * r[1]^2
     
-    gPDFM = Normal(1/r[end],sigma_parallax)
     x_M = [r[end]*cos(l*pi/180)*cos(b*pi/180),
     r[end]*sin(l*pi/180)*cos(b*pi/180),
     r[end]*sin(b*pi/180)]
-    ps += pdf(gPDFM,parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
+    ps += normpdf(parallax,1/r[end],sigma_parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
     
     for i in 2:(length(r)-1)
-        gPDFi = Normal(1/r[i],sigma_parallax)
         x_i = [r[i]*cos(l*pi/180)*cos(b*pi/180),
         r[i]*sin(l*pi/180)*cos(b*pi/180),
         r[i]*sin(b*pi/180)]
-        ps += 2* pdf(gPDFi,parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
+        ps += 2* normpdf(parallax,1/r[i],sigma_parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
     end
     integral = (r[2]-r[1])*ps/2
 
