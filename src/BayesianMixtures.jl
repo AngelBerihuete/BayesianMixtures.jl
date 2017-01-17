@@ -238,13 +238,13 @@ checkplotting() = (if !can_plot; error("Plotting is disabled since PyPlot is not
 
 # ---------- General plotting functions ----------
 
-function draw_now(number=0)
-    checkplotting()
-    if number>0; figure(number); end
-    pause(0.001) # this forces the figure to update (draw() is supposed to do this, but doesn't work for me)
-    get_current_fig_manager()[:window][:raise_]() # bring figure window to the front
-    #w=get_current_fig_manager()[:window][:attributes]; w("-topmost",1); w("-topmost", 0)
-end
+# function draw_now(number=0)
+#     checkplotting()
+#     if number>0; figure(number); end
+#     pause(0.001) # this forces the figure to update (draw() is supposed to do this, but doesn't work for me)
+#     get_current_fig_manager()[:window][:raise_]() # bring figure window to the front
+#     #w=get_current_fig_manager()[:window][:attributes]; w("-topmost",1); w("-topmost", 0)
+# end
 
 function open_figure(number;clear_figure=true,figure_size=(5,2.5))
     checkplotting()
@@ -281,7 +281,7 @@ function traceplot(values)
     subset = round(Int,linspace(1,n_values,n_subset))
     jitter = (rand(n_subset)-0.5)/2
     PyPlot.plot(subset,values[subset]+jitter, "k.", markersize=1.0)
-    draw_now()
+    #draw_now()
 end
 
 function traceplot_timewise(result,t_show)
@@ -296,7 +296,7 @@ function traceplot_timewise(result,t_show)
     yticks(1:maximum(result.t[subset]+1))
     ylim(0,ylim()[2])
     labels("Traceplot of t","time (seconds)","t")
-    draw_now()
+    #draw_now()
 end
 
 function plot_t_running(result)
@@ -311,7 +311,7 @@ function plot_t_running(result)
     end
     yticks(0:0.2:1)
     labels("Running average of CDF(t|x)", "sweep number", "CDF(t|x)")
-    draw_now()
+    #draw_now()
 end
 
 function plot_autocorrelation(values,t_show,timestep;kwargs...)
@@ -322,7 +322,7 @@ function plot_autocorrelation(values,t_show,timestep;kwargs...)
     labels("Autocorrelation","time (milliseconds)","")
     xlim(0,1000*t_show)
     ylim(0,1)
-    draw_now()
+    #draw_now()
 end
 
 function plot_autocorrelation(result,t_show;kwargs...)
@@ -331,7 +331,7 @@ function plot_autocorrelation(result,t_show;kwargs...)
     timestep = result.elapsed_time/o.n_total
     plot_autocorrelation(result.t[o.n_burn+1:o.n_total],t_show,timestep;kwargs...)
     labels("Autocorrelation of t","time (milliseconds)","")
-    draw_now()
+    #draw_now()
 end
 
 function plot_t_posterior(result; kwargs...)
@@ -340,7 +340,7 @@ function plot_t_posterior(result; kwargs...)
     PyPlot.plot(1:length(pt), pt; kwargs...)
     labels("Posterior on t","t (# of clusters)","p(t|data)")
     xticks(1:length(pt))
-    draw_now()
+    #draw_now()
 end
 
 function plot_t_posterior_average(results; kwargs...)
@@ -354,7 +354,7 @@ function plot_t_posterior_average(results; kwargs...)
     PyPlot.plot(1:T,avg; kwargs...)
     xticks(1:T)
     labels("Average posterior on t","t (# of clusters)","p(t|data)")
-    draw_now()
+    #draw_now()
 end
 
 function plot_k_posterior(result; kwargs...)
@@ -363,7 +363,7 @@ function plot_k_posterior(result; kwargs...)
     PyPlot.plot(1:length(pk), pk; kwargs...)
     labels("Posterior on k","k (# of components)","p(k|data)")
     xticks(1:length(pk))
-    draw_now()
+    #draw_now()
 end
 
 function plot_k_posterior_average(results; kwargs...)
@@ -377,7 +377,7 @@ function plot_k_posterior_average(results; kwargs...)
     PyPlot.plot(1:T,avg; kwargs...)
     xticks(1:T)
     labels("Average posterior on k","k (# of components)","p(k|data)")
-    draw_now()
+    #draw_now()
 end
 
 # Posterior similarity matrix (probability that i and j are in same cluster)
@@ -390,7 +390,7 @@ function plot_similarity_matrix(result; step=10)
     tick_params(axis="y",direction="out",top="off")
     xticks(step:step:n)
     yticks(step:step:n)
-    draw_now()
+    #draw_now()
 end
 
 function plot_clusters(x,z; colors=color_list, markers=marker_list, markersize=2)
@@ -421,7 +421,7 @@ function plot_clusters(x,z; colors=color_list, markers=marker_list, markersize=2
         error("Plotting clusters is only enabled for univariate or bivariate data.")
     end
     title("Clusters")
-    draw_now()
+    #draw_now()
 end
 
 function rug_plot(data) # Rug plot of data
@@ -430,7 +430,7 @@ function rug_plot(data) # Rug plot of data
     PyPlot.plot(data,zeros(length(data)),"k+",markersize = 18)
     tick_params(axis="x",direction="out",top="off")
     title("Rug plot")
-    draw_now()
+    #draw_now()
 end
 
 function plot_histogram(data; kwargs...) # Histogram of data
@@ -439,7 +439,7 @@ function plot_histogram(data; kwargs...) # Histogram of data
     counts,edges = histogram(data; n_bins=50)
     PyPlot.bar(edges[1:end-1],counts./(length(data)*diff(edges)),diff(edges); kwargs...)
     title("Histogram")
-    draw_now()
+    #draw_now()
 end
 
 function plot_density_estimate(result; resolution=-1, kwargs...)
@@ -471,7 +471,7 @@ function plot_density_estimate(result; resolution=-1, kwargs...)
         error("Plotting density estimates is only enabled for dimensions 1 and 2.")
     end
     title("Density estimate")
-    draw_now()
+    #draw_now()
 end
 
 
