@@ -239,13 +239,13 @@ checkplotting() = (if !can_plot; error("Plotting is disabled since PyPlot is not
 
 # ---------- General plotting functions ----------
 
-function draw_now(number=0)
-    checkplotting()
-    if number>0; figure(number); end
-    pause(0.001) # this forces the figure to update (draw() is supposed to do this, but doesn't work for me)
-    get_current_fig_manager()[:window][:raise_]() # bring figure window to the front
-    #w=get_current_fig_manager()[:window][:attributes]; w("-topmost",1); w("-topmost", 0)
-end
+# function draw_now(number=0)
+#     checkplotting()
+#     if number>0; figure(number); end
+#     pause(0.001) # this forces the figure to update (draw() is supposed to do this, but doesn't work for me)
+#     get_current_fig_manager()[:window][:raise_]() # bring figure window to the front
+#     #w=get_current_fig_manager()[:window][:attributes]; w("-topmost",1); w("-topmost", 0)
+# end
 
 function open_figure(number;clear_figure=true,figure_size=(5,2.5))
     checkplotting()
