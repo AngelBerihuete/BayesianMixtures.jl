@@ -133,18 +133,18 @@ function log_likelihood(x,plx,p)
     x_1 = [r[1]*cos(l*pi/180)*cos(b*pi/180),
     r[1]*sin(l*pi/180)*cos(b*pi/180),
     r[1]*sin(b*pi/180)]
-    ps += normpdf(parallax,1/r[1],sigma_parallax) * exp(MVN_logpdf(x_1,p)) * r[1]^2
+    ps += normpdf(parallax,1000.0/r[1],sigma_parallax) * exp(MVN_logpdf(x_1,p)) * r[1]^2
     
     x_M = [r[end]*cos(l*pi/180)*cos(b*pi/180),
     r[end]*sin(l*pi/180)*cos(b*pi/180),
     r[end]*sin(b*pi/180)]
-    ps += normpdf(parallax,1/r[end],sigma_parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
+    ps += normpdf(parallax,1000.0/r[end],sigma_parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
     
     for i in 2:(length(r)-1)
         x_i = [r[i]*cos(l*pi/180)*cos(b*pi/180),
         r[i]*sin(l*pi/180)*cos(b*pi/180),
         r[i]*sin(b*pi/180)]
-        ps += 2* normpdf(parallax,1/r[i],sigma_parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
+        ps += 2* normpdf(parallax,1000.0/r[i],sigma_parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
     end
     integral = (r[2]-r[1])*ps/2
 
