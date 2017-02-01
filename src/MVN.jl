@@ -126,29 +126,24 @@ Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
 function log_likelihood(x,plx,p)
     l,b,r1 = x
     parallax,sigma_parallax = plx
-    r = collect(15:5:700); # better aprox. to our ditances
+    r = collect(200:1:500); # better aprox. to our ditances
     # Trapezoidal rule to calculate the integral
     ps = 0.
     
-    x_1 = [r[1]*cos(l*pi/180)*cos(b*pi/180),
-    r[1]*sin(l*pi/180)*cos(b*pi/180),
-    r[1]*sin(b*pi/180)]
+    x_1 = [r[1]*cosd(l)*cosd(b), r[1]*sind(l)*cosd(b), r[1]*sind(b)]
     ps += normpdf(parallax,1000.0/r[1],sigma_parallax) * exp(MVN_logpdf(x_1,p)) * r[1]^2
     
-    x_M = [r[end]*cos(l*pi/180)*cos(b*pi/180),
-    r[end]*sin(l*pi/180)*cos(b*pi/180),
-    r[end]*sin(b*pi/180)]
+    x_M = [r[end]*cosd(l)*cosd(b), r[end]*sind(l)*cosd(b), r[end]*sind(b)]
     ps += normpdf(parallax,1000.0/r[end],sigma_parallax) * exp(MVN_logpdf(x_M,p)) * r[end]^2
     
     for i in 2:(length(r)-1)
-        x_i = [r[i]*cos(l*pi/180)*cos(b*pi/180),
-        r[i]*sin(l*pi/180)*cos(b*pi/180),
-        r[i]*sin(b*pi/180)]
+        x_i = [r[i]*cosd(l)*cosd(b), r[i]*sind(l)*cosd(b), r[i]*sind(b)]
         ps += 2* normpdf(parallax,1000.0/r[i],sigma_parallax) * exp(MVN_logpdf(x_i,p)) * r[i]^2
     end
-    integral = (r[2]-r[1])*ps/2
+    
+    integral = ps/602 # uniform grid (r[2]-r[1])*ps/(2*length(r)) 
 
-    return log(integral) + log(abs(cos(b*pi/180)))
+    return log(integral) + log(abs(cosd(b)))
 end
 
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)
